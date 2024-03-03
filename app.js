@@ -7,7 +7,7 @@ const key = fs.readFileSync("./key.pem", "utf8");
 const cert = fs.readFileSync("./cert.pem", "utf8");
 
 const app = express();
-const server = https.createServer({ key, cert }, app);
+const server = https.createServer({}, app);
 
 const { proxy, scriptUrl } = rtspRelay(app, server);
 
@@ -41,5 +41,5 @@ const PORT = Number(process.env.PORT) || 3000;
 const HOST = Number(process.env.HOST) || "0.0.0.0";
 
 server.listen(PORT, () => {
-  console.log(`Server is running on https://${HOST}:${PORT}`);
+  console.log(`Server is running on http://${HOST}:${PORT}`);
 });
