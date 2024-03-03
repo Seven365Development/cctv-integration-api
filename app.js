@@ -16,7 +16,6 @@ app.ws(
     // if your RTSP stream need credentials, include them in the URL as above
     verbose: false,
     transport: "tcp",
-    additionalFlags: ["-vf", "scale=1440:1080"],
   })
 );
 
