@@ -1,13 +1,9 @@
 const rtspRelay = require("rtsp-relay");
 const express = require("express");
-const https = require("https");
-const fs = require("fs");
-
-const key = fs.readFileSync("./key.pem", "utf8");
-const cert = fs.readFileSync("./cert.pem", "utf8");
+const { createServer } = require("http");
 
 const app = express();
-const server = https.createServer({ key, cert }, app);
+const server = createServer(app);
 
 const { proxy, scriptUrl } = rtspRelay(app, server);
 
@@ -22,10 +18,23 @@ app.ws(
   })
 );
 
-app.get("/", (_, res) => res.send(`hi`));
+app.get("/", (_, res) =>
+  res.send(`
+  <canvas id='canvas'></canvas>
+
+  <script src='${scriptUrl}'></script>
+  <script>
+    loadPlayer({
+      url: 'ws://' + location.host + '/api/stream',
+      canvas: document.getElementById('canvas'),
+      onDisconnect: () => console.log("Connection lost!"),
+    });
+  </script>
+`)
+);
 
 const PORT = Number(process.env.PORT) || 3000;
-const HOST = Number(process.env.HOST) || "0.0.0.0";
+const HOST = process.env.HOST || "localhost";
 
 server.listen(PORT, () => {
   console.log(`Server is running on http://${HOST}:${PORT}`);
