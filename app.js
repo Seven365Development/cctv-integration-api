@@ -21,7 +21,7 @@ app.ws(
 app.get("/", (_, res) => {
   const ws = process.env.NODE_ENV === "production" ? "wss" : "ws";
   res.send(`
-  <canvas id='canvas'></canvas>
+  <canvas id='canvas' style="display: 'block';"></canvas>
 
   <script src='${scriptUrl}'></script>
   <script>
