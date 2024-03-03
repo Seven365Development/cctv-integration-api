@@ -7,7 +7,7 @@ const key = fs.readFileSync("./key.pem", "utf8");
 const cert = fs.readFileSync("./cert.pem", "utf8");
 
 const app = express();
-const server = https.createServer({}, app);
+const server = https.createServer({ key, cert }, app);
 
 const { proxy, scriptUrl } = rtspRelay(app, server);
 
