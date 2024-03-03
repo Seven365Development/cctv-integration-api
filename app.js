@@ -87,8 +87,9 @@ app.get("/", (req, res) =>
 `)
 );
 
-const PORT = 2000;
+const PORT = Number(process.env.PORT) || 3000;
+const HOST = Number(process.env.HOST) || "0.0.0.0";
 
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`Server is running on http://${HOST}:${PORT}`);
 });
