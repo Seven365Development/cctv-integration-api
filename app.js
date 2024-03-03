@@ -56,7 +56,7 @@ app.get("/", (req, res) =>
   <script src='${scriptUrl}'></script>
   <script>
     var playerPromise = loadPlayer({
-      url: 'ws://' + location.host + '/api/stream',
+      url: 'wss://' + location.host + '/api/stream',
       canvas: document.getElementById('canvas'),
       audio : true
     });
