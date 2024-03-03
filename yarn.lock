@@ -50,11 +50,6 @@ array-flatten@1.1.1:
   resolved "https://registry.yarnpkg.com/array-flatten/-/array-flatten-1.1.1.tgz#9a5f699051b1e7073328f2a008968b64ea2955d2"
   integrity sha512-PCVAQswWemu6UdxsDFFX/+gVeYqKAod3D3UVm91jHwynguOwAvYPhx8nNlM++NqRcK6CxxpUafjmhIdKiHibqg==
 
-async-limiter@^1.0.0:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/async-limiter/-/async-limiter-1.0.1.tgz#dd379e94f0db8310b08291f9d64c3209766617fd"
-  integrity sha512-csOlWGAcRFJaI6m+F2WKdnMKr4HhdhFVBk0H/QbJFMCr+uO2kwohwXQPxw/9OCxp05r5ghVBFSyioixx3gfkNQ==
-
 balanced-match@^1.0.0:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/balanced-match/-/balanced-match-1.0.2.tgz#e83e3a7e3f300b34cb9d87f615fa0cbf357690ee"
@@ -479,11 +474,6 @@ is-number@^7.0.0:
   resolved "https://registry.yarnpkg.com/is-number/-/is-number-7.0.0.tgz#7535345b896734d5f80c4d06c50955527a14f12b"
   integrity sha512-41Cifkg6e8TylSpdtTpeLVMqvSBEVzTttHvERD741+pnZ8ANv0004MRL43QKPDlK9cGvNp6NZWZUBlbGXYxxng==
 
-jsmpeg@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/jsmpeg/-/jsmpeg-1.0.0.tgz#7e41516d748720e06336392eeb951709ae532442"
-  integrity sha512-wlBKWVJ93NRJaCfrJ1KAgpMvZBLzpZxH3wnC1Yj7DudMDa/5hHeL1HfvW48ndR8GlI4irrqCXuOGhgayP9EbHw==
-
 lru-cache@^6.0.0:
   version "6.0.0"
   resolved "https://registry.yarnpkg.com/lru-cache/-/lru-cache-6.0.0.tgz#6d6fe6570ebd96aaf90fcad1dafa3b2566db3a94"
@@ -549,21 +539,6 @@ negotiator@0.6.3:
   version "0.6.3"
   resolved "https://registry.yarnpkg.com/negotiator/-/negotiator-0.6.3.tgz#58e323a72fedc0d6f9cd4d31fe49f51479590ccd"
   integrity sha512-+EUsqGPLsM+j/zdChZjsnX51g4XrHFOIXwfnCVPGlQk/k5giakcKsuxCObBRu6DSm9opw/O6slWbJdghQM4bBg==
-
-node-rtsp-stream-es6@^1.0.7:
-  version "1.0.7"
-  resolved "https://registry.yarnpkg.com/node-rtsp-stream-es6/-/node-rtsp-stream-es6-1.0.7.tgz#3bdb3422b8b12e9b4544546e58f89b3cc074a3ff"
-  integrity sha512-UsOt0Ouj6ZY6AG4QMsDBtttUq2+0JfwdptW/bCjOKh3a1FmGmBLLgmMYZIi1V3uu++MBkZT7NWarJ0tKw+YdYw==
-  dependencies:
-    jsmpeg "^1.0.0"
-    ws "7.1.2"
-
-node-rtsp-stream@^0.0.9:
-  version "0.0.9"
-  resolved "https://registry.yarnpkg.com/node-rtsp-stream/-/node-rtsp-stream-0.0.9.tgz#f79abd27f72eeee44713cfc43b8d939ab2700b8b"
-  integrity sha512-ynSkdHL4fuhctl1GeK890De7n8Dw+37D6IAZGrzsFSrd4TYho6neFQpMS1t0ZRDGsAegKh2p6kl1l9Vo3pJk8w==
-  dependencies:
-    ws "^7.0.0"
 
 nodemon@^3.0.2:
   version "3.1.0"
@@ -701,14 +676,6 @@ rtsp-relay@^1.7.0:
     express-ws "^5.0.2"
     ffmpeg-static "^5.2.0"
     ps-node "^0.1.6"
-
-rtsp-stream-hls@^1.0.7:
-  version "1.0.7"
-  resolved "https://registry.yarnpkg.com/rtsp-stream-hls/-/rtsp-stream-hls-1.0.7.tgz#624c593d91e5858d3da92b6d6f9723012cbefc56"
-  integrity sha512-mOlQdZZD9X/Wj+PE0UQSO+g8fCGcKGqkOe5Y//MraaBe2Bj7eOG+DuQr9GVeZQTWHffIqxG8i8qRKMnTzoIfgg==
-  dependencies:
-    express "^4.18.2"
-    node-rtsp-stream "^0.0.9"
 
 safe-buffer@5.2.1, safe-buffer@~5.2.0:
   version "5.2.1"
@@ -873,14 +840,7 @@ vary@^1, vary@~1.1.2:
   resolved "https://registry.yarnpkg.com/vary/-/vary-1.1.2.tgz#2299f02c6ded30d4a5961b0b9f74524a18f634fc"
   integrity sha512-BNGbWLfd0eUPabhkXUVm0j8uuvREyTh5ovRa/dyow/BqAbZJyC+5fU+IzQOzmAKzYqYRAISoRhdQr3eIZ/PXqg==
 
-ws@7.1.2:
-  version "7.1.2"
-  resolved "https://registry.yarnpkg.com/ws/-/ws-7.1.2.tgz#c672d1629de8bb27a9699eb599be47aeeedd8f73"
-  integrity sha512-gftXq3XI81cJCgkUiAVixA0raD9IVmXqsylCrjRygw4+UOOGzPoxnQ6r/CnVL9i+mDncJo94tSkyrtuuQVBmrg==
-  dependencies:
-    async-limiter "^1.0.0"
-
-ws@^7.0.0, ws@^7.4.6:
+ws@^7.4.6:
   version "7.5.9"
   resolved "https://registry.yarnpkg.com/ws/-/ws-7.5.9.tgz#54fa7db29f4c7cec68b1ddd3a89de099942bb591"
   integrity sha512-F+P9Jil7UiSKSkppIiD94dN07AwvFixvLIj1Og1Rl9GGMuNipJnV9JzjD6XuqmAeiswGvUmNLjr5cFuXwNS77Q==

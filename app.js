@@ -87,4 +87,8 @@ app.get("/", (req, res) =>
 `)
 );
 
-app.listen(2000);
+const PORT = 2000;
+
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
+});
