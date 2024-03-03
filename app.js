@@ -40,6 +40,6 @@ app.get("/", (_, res) =>
 const PORT = Number(process.env.PORT) || 3000;
 const HOST = Number(process.env.HOST) || "0.0.0.0";
 
-server.listen(PORT, () => {
+app.listen(PORT, () => {
   console.log(`Server is running on http://${HOST}:${PORT}`);
 });
