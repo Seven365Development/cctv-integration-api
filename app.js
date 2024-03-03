@@ -22,7 +22,7 @@ app.get("/", (_, res) => {
   const ws = process.env.NODE_ENV === "production" ? "wss" : "ws";
   res.send(`
     <div>
-      <canvas id="canvas" style="width: 85vw; height: 85vh; display : block;margin:auto;"></canvas>
+      <canvas id="canvas" style="width: 100vw; height: 100vh; display : block;"></canvas>
       <div id="player-controls">
         <button id="play-button">Play</button>
         <button id="pause-button">Pause</button>
@@ -31,9 +31,10 @@ app.get("/", (_, res) => {
       </div>
     </div>
     <style>
-      
+      body {
+        padding: 0;
+      }
       #player-controls {
-        // display: flex;
         display:none;
         justify-content: space-between;
         align-items: center;
