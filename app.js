@@ -1,12 +1,14 @@
 const rtspRelay = require("rtsp-relay");
 const express = require("express");
 const { createServer } = require("http");
+const cors = require("cors");
 
 const app = express();
 const server = createServer(app);
 
 const { proxy, scriptUrl } = rtspRelay(app, server);
 
+app.use(cors());
 app.ws(
   "/api/stream",
   proxy({
@@ -33,6 +35,7 @@ app.get("/", (_, res) => {
     <style>
       body {
         padding: 0;
+        margin: 0;
       }
       #player-controls {
         display:none;
