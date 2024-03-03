@@ -22,20 +22,7 @@ app.ws(
   })
 );
 
-app.get("/", (_, res) =>
-  res.send(`
-  <canvas id='canvas'></canvas>
-
-  <script src='${scriptUrl}'></script>
-  <script>
-    loadPlayer({
-      url: 'wss://' + location.host + '/api/stream',
-      canvas: document.getElementById('canvas'),
-      onDisconnect: () => console.log("Connection lost!"),
-    });
-  </script>
-`)
-);
+app.get("/", (_, res) => res.send(`hi`));
 
 const PORT = Number(process.env.PORT) || 3000;
 const HOST = Number(process.env.HOST) || "0.0.0.0";
