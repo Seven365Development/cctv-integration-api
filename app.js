@@ -18,7 +18,8 @@ app.ws(
   })
 );
 
-app.get("/", (_, res) =>
+app.get("/", (_, res) => {
+  const ws = process.env.NODE_ENV === "production" ? "wss" : "ws";
   res.send(`
   <canvas id='canvas'></canvas>
 
@@ -26,14 +27,14 @@ app.get("/", (_, res) =>
   <script>
   document.addEventListener("DOMContentLoaded", function() {
     loadPlayer({
-      url: 'wss://' + location.host + '/api/stream',
+      url: '${ws}://' + location.host + '/api/stream',
       canvas: document.getElementById('canvas'),
-      onDisconnect: () => console.log("Connection lost!"),
+      onDisconnect: (e) => console.log("Connection lost!",e),
     });
   });
 </script>
-`)
-);
+`);
+});
 
 const PORT = Number(process.env.PORT) || 3000;
 const HOST = process.env.HOST || "localhost";
