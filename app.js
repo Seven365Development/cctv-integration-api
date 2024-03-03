@@ -24,12 +24,14 @@ app.get("/", (_, res) =>
 
   <script src='${scriptUrl}'></script>
   <script>
+  document.addEventListener("DOMContentLoaded", function() {
     loadPlayer({
       url: 'wss://' + location.host + '/api/stream',
       canvas: document.getElementById('canvas'),
       onDisconnect: () => console.log("Connection lost!"),
     });
-  </script>
+  });
+</script>
 `)
 );
 
