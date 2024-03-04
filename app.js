@@ -12,7 +12,7 @@ const { proxy, scriptUrl } = rtspRelay(app, server);
 app.use(cors());
 const dahuaPort = process.env.DAHUA_PORT || 80;
 const handler = proxy({
-  url: `rtsp://admin:admin7365@anprdahua.dyndns.org:${dahuaPort}/cam/realmonitor?channel=1&subtype=0`,
+  url: `rtsp://admin:admin7365@129.126.212.21:${dahuaPort}/cam/realmonitor?channel=1&subtype=0`,
   // if your RTSP stream need credentials, include them in the URL as above
   verbose: false,
   additionalFlags: ["-q", "1"],
