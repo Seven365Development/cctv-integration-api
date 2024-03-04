@@ -1,26 +1,30 @@
 const rtspRelay = require("rtsp-relay");
 const express = require("express");
-const { createServer } = require("http");
+const { createServer } = require("https");
 const cors = require("cors");
 require("dotenv").config();
+const fs = require("fs");
 
 const app = express();
-const server = createServer(app);
+
+const key = fs.readFileSync("./key.pem", "utf8");
+const cert = fs.readFileSync("./cert.pem", "utf8");
+
+const server = createServer({ key, cert }, app);
 
 const { proxy, scriptUrl } = rtspRelay(app, server);
 
 app.use(cors());
 const dahuaPort = process.env.DAHUA_PORT || 80;
-app.ws(
-  "/api/stream",
-  proxy({
-    url: `rtsp://admin:admin7365@anprdahua.dyndns.org:${dahuaPort}/cam/realmonitor?channel=1&subtype=0`,
-    // if your RTSP stream need credentials, include them in the URL as above
-    verbose: false,
-    additionalFlags: ["-q", "1"],
-    transport: "tcp",
-  })
-);
+const handler = proxy({
+  url: `rtsp://admin:admin7365@anprdahua.dyndns.org:${dahuaPort}/cam/realmonitor?channel=1&subtype=0`,
+  // if your RTSP stream need credentials, include them in the URL as above
+  verbose: false,
+  additionalFlags: ["-q", "1"],
+  transport: "tcp",
+});
+
+app.ws("/api/stream", handler);
 
 app.get("/", (_, res) => {
   const ws = process.env.NODE_ENV === "production" ? "wss" : "ws";
