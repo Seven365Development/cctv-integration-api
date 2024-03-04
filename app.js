@@ -13,7 +13,7 @@ const dahuaPort = process.env.NODE_ENV === "production" ? 443 : 80;
 app.ws(
   "/api/stream",
   proxy({
-    url: `rtsp://admin:admin7365@anprdahua.dyndns.org:554/cam/realmonitor?channel=1&subtype=0`,
+    url: `rtsp://admin:admin7365@anprdahua.dyndns.org/cam/realmonitor?channel=1&subtype=0`,
     // if your RTSP stream need credentials, include them in the URL as above
     verbose: false,
     transport: "tcp",
