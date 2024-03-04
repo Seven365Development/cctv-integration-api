@@ -18,19 +18,7 @@ const handler = proxy({
   additionalFlags: ["-q", "1"],
   transport: "tcp",
 });
-app.ws("/api/stream", (ws, req) => {
-  try {
-    return proxy({
-      url: `rtsp://admin:admin7365@129.126.212.21:${dahuaPort}/cam/realmonitor?channel=1&subtype=0`,
-      // if your RTSP stream need credentials, include them in the URL as above
-      verbose: false,
-      additionalFlags: ["-q", "1"],
-      transport: "tcp",
-    })(ws);
-  } catch (error) {
-    console.log(error);
-  }
-});
+app.ws("/api/stream", handler);
 
 app.get("/", (_, res) => {
   const ws = process.env.NODE_ENV === "production" ? "wss" : "ws";
