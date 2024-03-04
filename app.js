@@ -2,6 +2,7 @@ const rtspRelay = require("rtsp-relay");
 const express = require("express");
 const { createServer } = require("http");
 const cors = require("cors");
+require("dotenv").config();
 
 const app = express();
 const server = createServer(app);
