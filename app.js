@@ -14,7 +14,7 @@ const proxy = createProxyMiddleware({
   target: targetUrl,
   changeOrigin: true, // Needed for virtual hosted sites
   pathRewrite: {
-    [`^/proxied1`]: "", // Remove the '/proxied1' from the request path
+    [`^/proxied1/`]: "", // Remove the '/proxied1' from the request path
   },
 });
 
@@ -24,5 +24,5 @@ app.use("/", proxy);
 // Start the Express server
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
-  console.log(`eServer is listening on port ${port}`);
+  console.log(`Server is listening on port ${port}`);
 });
