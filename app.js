@@ -14,15 +14,15 @@ const proxy = createProxyMiddleware({
   target: targetUrl,
   changeOrigin: true, // Needed for virtual hosted sites
   pathRewrite: {
-    [`^/api/cctv-feed`]: "", // Remove the '/proxied1' from the request path
+    [`^/proxied1`]: "", // Remove the '/proxied1' from the request path
   },
 });
 
 // Use the proxy middleware for the specified endpoint
-app.use("/api/cctv-feed", proxy);
+app.use("/", proxy);
 
 // Start the Express server
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
-  console.log(`Server is listening on port ${port}`);
+  console.log(`eServer is listening on port ${port}`);
 });
