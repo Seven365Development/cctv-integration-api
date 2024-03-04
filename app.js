@@ -3,6 +3,9 @@ const { createProxyMiddleware } = require("http-proxy-middleware");
 
 const app = express();
 
+const cors = require("cors");
+app.use(cors());
+
 // Define the endpoint to proxy to
 const targetUrl = "http://13.229.236.174:8889/proxied1";
 
@@ -19,7 +22,7 @@ const proxy = createProxyMiddleware({
 app.use("/api/cctv-feed", proxy);
 
 // Start the Express server
-const port = 3000;
+const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`Server is listening on port ${port}`);
 });
