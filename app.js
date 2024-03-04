@@ -1,100 +1,25 @@
-const rtspRelay = require("rtsp-relay");
 const express = require("express");
-const { createServer } = require("http");
-const cors = require("cors");
+const { createProxyMiddleware } = require("http-proxy-middleware");
 
 const app = express();
-const server = createServer(app);
 
-const { proxy, scriptUrl } = rtspRelay(app, server);
+// Define the endpoint to proxy to
+const targetUrl = "http://13.229.236.174:8889/proxied1";
 
-app.use(cors());
-app.ws(
-  "/api/stream",
-  proxy({
-    url: "rtsp://admin:admin7365@anprdahua.dyndns.org:80/cam/realmonitor?channel=1&subtype=0",
-    // if your RTSP stream need credentials, include them in the URL as above
-    verbose: false,
-    transport: "tcp",
-  })
-);
-
-app.get("/", (_, res) => {
-  const ws = process.env.NODE_ENV === "production" ? "wss" : "ws";
-  res.send(`
-    <div>
-      <canvas id="canvas" style="width: 100vw; height: 100vh; display : block;"></canvas>
-      <div id="player-controls">
-        <button id="play-button">Play</button>
-        <button id="pause-button">Pause</button>
-        <button id="mute-button">Mute</button>
-        <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="1">
-      </div>
-    </div>
-    <style>
-      body {
-        padding: 0;
-        margin: 0;
-      }
-      #player-controls {
-        display:none;
-        justify-content: space-between;
-        align-items: center;
-        background-color: #333;
-        padding: 10px;
-      }
-      button {
-        margin: 0 5px;
-        padding: 8px 12px;
-        border: none;
-        border-radius: 4px;
-        background-color: #3498db;
-        color: white;
-        cursor: pointer;
-      }
-      input[type="range"] {
-        width: 100px;
-        margin: 0 5px;
-      }
-    </style>
-    <script src='${scriptUrl}'></script>
-    <script>
-      var playerPromise = loadPlayer({
-        url: '${ws}://' + location.host + '/api/stream',
-        canvas: document.getElementById('canvas'),
-        audio : true
-      });
-
-      
-      const playButton = document.getElementById('play-button');
-      const pauseButton = document.getElementById('pause-button');
-      const muteButton = document.getElementById('mute-button');
-      const volumeSlider = document.getElementById('volume-slider');
-      playerPromise.then(player =>{
-      playButton.addEventListener('click', () => {
-        player.play();
-      });
-
-      pauseButton.addEventListener('click', () => {
-        player.pause();
-      });
-      muteButton.addEventListener('click', () => {
-        player.volume = player.volume === 0 ? 1 : 0;
-        volumeSlider.value = player.volume;
-      });
-
-      volumeSlider.addEventListener('input', () => {
-        player.volume = parseFloat(volumeSlider.value);
-      });
-      })
-
-    </script>
-  `);
+// Create a proxy middleware instance
+const proxy = createProxyMiddleware({
+  target: targetUrl,
+  changeOrigin: true, // Needed for virtual hosted sites
+  pathRewrite: {
+    [`^/api/cctv-feed`]: "", // Remove the '/proxied1' from the request path
+  },
 });
 
-const PORT = Number(process.env.PORT) || 3000;
-const HOST = process.env.HOST || "localhost";
+// Use the proxy middleware for the specified endpoint
+app.use("/api/cctv-feed", proxy);
 
-server.listen(PORT, () => {
-  console.log(`Server is running on http://${HOST}:${PORT}`);
+// Start the Express server
+const port = 3000;
+app.listen(port, () => {
+  console.log(`Server is listening on port ${port}`);
 });
