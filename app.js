@@ -1,11 +1,16 @@
 const rtspRelay = require("rtsp-relay");
 const express = require("express");
+const https = require("https");
 const { createServer } = require("http");
 const cors = require("cors");
 require("dotenv").config();
+const fs = require("fs");
+
+const key = fs.readFileSync("./key.pem", "utf8");
+const cert = fs.readFileSync("./cert.pem", "utf8");
 
 const app = express();
-const server = createServer(app);
+const server = https.createServer({ key, cert }, app);
 
 const { proxy, scriptUrl } = rtspRelay(app, server);
 
