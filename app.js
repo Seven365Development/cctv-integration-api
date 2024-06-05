@@ -11,18 +11,24 @@ const { proxy, scriptUrl } = rtspRelay(app, server);
 
 app.use(cors());
 const dahuaPort = process.env.DAHUA_PORT || 80;
-const handler = proxy({
-  url: `rtsp://admin:admin7365@129.126.212.21:${dahuaPort}/cam/realmonitor?channel=1&subtype=0`,
-  // if your RTSP stream need credentials, include them in the URL as above
-  verbose: false,
-  additionalFlags: ["-q", "1"],
-  transport: "tcp",
+const handler = (channel) =>
+	proxy({
+		url: `rtsp://admin:Henderson2016@cafe4you.dyndns.org:${dahuaPort}/cam/realmonitor?channel=${channel}&subtype=0`,
+		// if your RTSP stream need credentials, include them in the URL as above
+		verbose: false,
+		additionalFlags: ["-q", "1"],
+		transport: "tcp",
+	});
+app.ws("/api/stream/:channel", (ws, req) => {
+	const { channel } = req.params;
+	const wsHandler = handler(channel);
+	wsHandler(ws, req);
 });
-app.ws("/api/stream", handler);
 
-app.get("/", (_, res) => {
-  const ws = process.env.NODE_ENV === "production" ? "wss" : "ws";
-  res.send(`
+app.get("/:id", (req, res) => {
+	const id = req.params.id;
+	const ws = process.env.NODE_ENV === "production" ? "wss" : "ws";
+	res.send(`
     <div>
       <canvas id="canvas" style="width: 100vw; height: 100vh; display : block;"></canvas>
       <div id="player-controls">
@@ -61,7 +67,7 @@ app.get("/", (_, res) => {
     <script src='${scriptUrl}'></script>
     <script>
       var playerPromise = loadPlayer({
-        url: '${ws}://' + location.host + '/api/stream',
+        url: '${ws}://' + location.host + '/api/stream/${id}',
         canvas: document.getElementById('canvas'),
         audio : true
       });
@@ -97,5 +103,5 @@ const PORT = Number(process.env.PORT) || 3000;
 const HOST = process.env.HOST || "localhost";
 
 server.listen(PORT, () => {
-  console.log(`Server is running on http://${HOST}:${PORT}`);
+	console.log(`Server is running on http://${HOST}:${PORT}`);
 });
