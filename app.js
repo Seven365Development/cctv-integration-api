@@ -3,56 +3,39 @@ const express = require("express");
 const cors = require("cors");
 const { createServer } = require("http");
 require("dotenv").config();
+const fs = require("fs");
+
+const key = fs.readFileSync("./key.pem", "utf8");
+const cert = fs.readFileSync("./cert.pem", "utf8");
 
 const app = express();
 const server = createServer(app);
 
 const { proxy, scriptUrl } = rtspRelay(app, server);
 
-const corsOptions = {
-  origin: "*", // Adjust according to your requirements
-  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-  preflightContinue: false,
-  optionsSuccessStatus: 204,
-};
-app.use(cors(corsOptions));
+app.use(cors());
 
 const dahuaPort = process.env.DAHUA_PORT || 80;
 
 const handler = (channel) =>
   proxy({
     url: `rtsp://admin:Henderson2016@cafe4you.dyndns.org:${dahuaPort}/cam/realmonitor?channel=${channel}&subtype=0`,
-    verbose: true,
+    verbose: true, // Increase verbosity for more detailed logging
     additionalFlags: ["-q", "1"],
     transport: "tcp",
+    onDisconnect: (client) => {
+      console.log(`Client disconnected: ${client}`);
+      // Optionally, handle reconnection logic here
+    },
+    onError: (error) => {
+      console.error(`Stream error: ${error}`);
+      // Optionally, handle stream errors here
+    }
   });
 
 app.ws("/api/stream/:channel", (ws, req) => {
-  setInterval(() => {
-    if (ws.readyState === ws.OPEN) {
-      ws.send(JSON.stringify({ type: "ping" }));
-    }
-  }, 30000); // Send a ping every 30 seconds
   const { channel } = req.params;
   const wsHandler = handler(channel);
-  ws.on("open", () => {
-    console.log("WebSocket connection opened");
-  });
-
-  ws.on("message", (message) => {
-    console.log("Received message:", message);
-    if (typeof message !== "string") {
-      console.log("Received binary data");
-    }
-  });
-
-  ws.on("error", (error) => {
-    console.error("WebSocket error:", error);
-  });
-
-  ws.on("close", () => {
-    console.log("WebSocket connection closed");
-  });
   wsHandler(ws, req);
 });
 
@@ -109,43 +92,23 @@ app.get("/:id", (req, res) => {
       const volumeSlider = document.getElementById('volume-slider');
 
       playerPromise.then(player => {
-        console.log('Player loaded:', player);
-
         playButton.addEventListener('click', () => {
           player.play();
-          console.log('Play button clicked');
         });
 
         pauseButton.addEventListener('click', () => {
           player.pause();
-          console.log('Pause button clicked');
         });
 
         muteButton.addEventListener('click', () => {
           player.volume = player.volume === 0 ? 1 : 0;
           volumeSlider.value = player.volume;
-          console.log('Mute button clicked');
         });
 
         volumeSlider.addEventListener('input', () => {
           player.volume = parseFloat(volumeSlider.value);
-          console.log('Volume changed:', player.volume);
         });
       });
-
-      const ws = new WebSocket('${wsProtocol}://' + location.host + '/api/stream/${id}');
-      ws.onopen = function() {
-        console.log('WebSocket connection opened');
-      };
-      ws.onmessage = function(event) {
-        console.log('WebSocket message received:', event.data);
-      };
-      ws.onerror = function(error) {
-        console.error('WebSocket error:', error);
-      };
-      ws.onclose = function() {
-        console.log('WebSocket connection closed');
-      };
     </script>
   `);
 });
