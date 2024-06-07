@@ -9,14 +9,20 @@ const server = createServer(app);
 
 const { proxy, scriptUrl } = rtspRelay(app, server);
 
-app.use(cors());
+const corsOptions = {
+  origin: '*', // Adjust according to your requirements
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  preflightContinue: false,
+  optionsSuccessStatus: 204,
+};
+app.use(cors(corsOptions));
 
 const dahuaPort = process.env.DAHUA_PORT || 80;
 
 const handler = (channel) =>
   proxy({
     url: `rtsp://admin:Henderson2016@cafe4you.dyndns.org:${dahuaPort}/cam/realmonitor?channel=${channel}&subtype=0`,
-    verbose: false,
+    verbose: true,
     additionalFlags: ["-q", "1"],
     transport: "tcp",
   });
@@ -24,6 +30,11 @@ const handler = (channel) =>
 app.ws("/api/stream/:channel", (ws, req) => {
   const { channel } = req.params;
   const wsHandler = handler(channel);
+  setInterval(() => {
+    if (ws.readyState === ws.OPEN) {
+      ws.send(JSON.stringify({ type: 'ping' }));
+    }
+  }, 30000); // Send a ping every 30 seconds
   ws.on('open', () => {
     console.log('WebSocket connection opened');
   });
