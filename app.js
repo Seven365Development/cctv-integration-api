@@ -12,6 +12,7 @@ const { proxy, scriptUrl } = rtspRelay(app, server);
 app.use(cors());
 
 const dahuaPort = process.env.DAHUA_PORT || 80;
+
 const handler = (channel) =>
   proxy({
     url: `rtsp://admin:Henderson2016@cafe4you.dyndns.org:${dahuaPort}/cam/realmonitor?channel=${channel}&subtype=0`,
@@ -23,6 +24,24 @@ const handler = (channel) =>
 app.ws("/api/stream/:channel", (ws, req) => {
   const { channel } = req.params;
   const wsHandler = handler(channel);
+  ws.on('open', () => {
+    console.log('WebSocket connection opened');
+  });
+
+  ws.on('message', (message) => {
+    console.log('Received message:', message);
+    if (typeof message !== 'string') {
+      console.log('Received binary data');
+    }
+  });
+
+  ws.on('error', (error) => {
+    console.error('WebSocket error:', error);
+  });
+
+  ws.on('close', () => {
+    console.log('WebSocket connection closed');
+  });
   wsHandler(ws, req);
 });
 
@@ -31,7 +50,7 @@ app.get("/:id", (req, res) => {
   const wsProtocol = process.env.NODE_ENV === "production" ? "wss" : "ws";
   res.send(`
     <div>
-      <canvas id="canvas" style="width: 100vw; height: 100vh; display : block;"></canvas>
+      <canvas id="canvas" style="width: 100vw; height: 100vh; display: block;"></canvas>
       <div id="player-controls">
         <button id="play-button">Play</button>
         <button id="pause-button">Pause</button>
@@ -45,7 +64,7 @@ app.get("/:id", (req, res) => {
         margin: 0;
       }
       #player-controls {
-        display:none;
+        display: none;
         justify-content: space-between;
         align-items: center;
         background-color: #333;
