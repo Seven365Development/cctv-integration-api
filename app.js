@@ -1,39 +1,35 @@
 const rtspRelay = require("rtsp-relay");
 const express = require("express");
-const https = require("https");
-const { createServer } = require("http");
 const cors = require("cors");
+const { createServer } = require("http");
 require("dotenv").config();
-const fs = require("fs");
-
-const key = fs.readFileSync("./key.pem", "utf8");
-const cert = fs.readFileSync("./cert.pem", "utf8");
 
 const app = express();
-const server = https.createServer({ key, cert }, app);
+const server = createServer(app);
 
 const { proxy, scriptUrl } = rtspRelay(app, server);
 
 app.use(cors());
+
 const dahuaPort = process.env.DAHUA_PORT || 80;
 const handler = (channel) =>
-	proxy({
-		url: `rtsp://admin:Henderson2016@cafe4you.dyndns.org:${dahuaPort}/cam/realmonitor?channel=${channel}&subtype=0`,
-		// if your RTSP stream need credentials, include them in the URL as above
-		verbose: false,
-		additionalFlags: ["-q", "1"],
-		transport: "tcp",
-	});
+  proxy({
+    url: `rtsp://admin:Henderson2016@cafe4you.dyndns.org:${dahuaPort}/cam/realmonitor?channel=${channel}&subtype=0`,
+    verbose: false,
+    additionalFlags: ["-q", "1"],
+    transport: "tcp",
+  });
+
 app.ws("/api/stream/:channel", (ws, req) => {
-	const { channel } = req.params;
-	const wsHandler = handler(channel);
-	wsHandler(ws, req);
+  const { channel } = req.params;
+  const wsHandler = handler(channel);
+  wsHandler(ws, req);
 });
 
 app.get("/:id", (req, res) => {
-	const id = req.params.id;
-	const ws = process.env.NODE_ENV === "production" ? "wss" : "ws";
-	res.send(`
+  const id = req.params.id;
+  const wsProtocol = process.env.NODE_ENV === "production" ? "wss" : "ws";
+  res.send(`
     <div>
       <canvas id="canvas" style="width: 100vw; height: 100vh; display : block;"></canvas>
       <div id="player-controls">
@@ -72,41 +68,41 @@ app.get("/:id", (req, res) => {
     <script src='${scriptUrl}'></script>
     <script>
       var playerPromise = loadPlayer({
-        url: '${ws}://' + location.host + '/api/stream/${id}',
+        url: '${wsProtocol}://' + location.host + '/api/stream/${id}',
         canvas: document.getElementById('canvas'),
-        audio : true
+        audio: true
       });
 
-      
       const playButton = document.getElementById('play-button');
       const pauseButton = document.getElementById('pause-button');
       const muteButton = document.getElementById('mute-button');
       const volumeSlider = document.getElementById('volume-slider');
-      playerPromise.then(player =>{
-      playButton.addEventListener('click', () => {
-        player.play();
-      });
 
-      pauseButton.addEventListener('click', () => {
-        player.pause();
-      });
-      muteButton.addEventListener('click', () => {
-        player.volume = player.volume === 0 ? 1 : 0;
-        volumeSlider.value = player.volume;
-      });
+      playerPromise.then(player => {
+        playButton.addEventListener('click', () => {
+          player.play();
+        });
 
-      volumeSlider.addEventListener('input', () => {
-        player.volume = parseFloat(volumeSlider.value);
-      });
-      })
+        pauseButton.addEventListener('click', () => {
+          player.pause();
+        });
 
+        muteButton.addEventListener('click', () => {
+          player.volume = player.volume === 0 ? 1 : 0;
+          volumeSlider.value = player.volume;
+        });
+
+        volumeSlider.addEventListener('input', () => {
+          player.volume = parseFloat(volumeSlider.value);
+        });
+      });
     </script>
   `);
 });
 
 const PORT = Number(process.env.PORT) || 3000;
-const HOST = process.env.HOST || "localhost";
+const HOST = process.env.HOST || "0.0.0.0";
 
 server.listen(PORT, () => {
-	console.log(`Server is running on http://${HOST}:${PORT}`);
+  console.log(`Server is running on http://${HOST}:${PORT}`);
 });
