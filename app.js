@@ -37,8 +37,8 @@ const handler = (channel) => {
 
 // WebSocket connection handler
 wss.on("connection", (ws, req) => {
-  const { channel } = req.params;
-  const wsHandler = handler(channel);
+  const { id } = req.params;
+  const wsHandler = handler(id);
   proxy(wsHandler)(ws, req); // Proxy the RTSP stream to the WebSocket connection
 });
 
