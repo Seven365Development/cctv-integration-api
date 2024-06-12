@@ -30,7 +30,7 @@ const handler = (channel) =>
       // Optionally, handle reconnection logic here
     },
     onError: (error) => {
-      console.log('RSTP:' `rtsp://admin:Henderson2016@cafe4you.dyndns.org:${dahuaPort}/cam/realmonitor?channel=${channel}&subtype=0`)
+      console.log('RSTP:' `rtsp://admin:Henderson2016@cafe4you.dyndns.org:554/cam/realmonitor?channel=1&subtype=0`)
       console.error(`Stream error: ${error}`);
       // Optionally, handle stream errors here
     }
@@ -44,7 +44,8 @@ app.ws("/api/stream/:channel", (ws, req) => {
 
 app.get("/:id", (req, res) => {
   const id = req.params.id;
-  const wsProtocol = process.env.NODE_ENV === "production" ? "wss" : "ws";
+  // const wsProtocol = process.env.NODE_ENV === "production" ? "wss" : "ws";
+  const wsProtocol = "ws";
   res.send(`
     <div>
       <canvas id="canvas" style="width: 100vw; height: 100vh; display: block;"></canvas>
