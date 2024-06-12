@@ -16,17 +16,14 @@ const dahuaPort = process.env.DAHUA_PORT || 554;
 const createFFmpegProcess = (channel) => {
   console.log(`Creating FFmpeg process for channel ${channel}`);
   return spawn("ffmpeg", [
-    "-rtsp_transport",
-    "tcp",
-    "-i",
-    `rtsp://admin:Henderson2016@cafe4you.dyndns.org:${dahuaPort}/cam/realmonitor?channel=${channel}&subtype=0`,
-    "-f",
-    "mpegts",
-    "-codec:v",
-    "mpeg1video",
-    "-codec:a",
-    "mp2",
-    "-",
+    "-rtsp_transport", "tcp",
+    "-i", `rtsp://admin:Henderson2016@cafe4you.dyndns.org:${dahuaPort}/cam/realmonitor?channel=${channel}&subtype=0`,
+    "-vf", "fps=25", // Adjust frame rate
+    "-pix_fmt", "yuv420p", // Set pixel format
+    "-f", "mpegts",
+    "-codec:v", "mpeg1video",
+    "-codec:a", "mp2",
+    "-"
   ]);
 };
 
