@@ -55,7 +55,8 @@ ws.on("connection", (ws, req) => {
 
 app.get("/:id", (req, res) => {
   const id = req.params.id;
-  const wsProtocol = process.env.NODE_ENV === "production" ? "wss" : "ws";
+  // const wsProtocol = process.env.NODE_ENV === "production" ? "wss" : "ws";
+  const wsProtocol = "ws";
   res.send(`
     <div>
       <canvas id="canvas" style="width: 100vw; height: 100vh; display: block;"></canvas>
