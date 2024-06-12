@@ -1,116 +1,90 @@
-const rtspRelay = require("rtsp-relay");
 const express = require("express");
 const cors = require("cors");
-const { createServer } = require("http");
+const http = require("http");
+const WebSocket = require("ws");
+const { spawn } = require("child_process");
 require("dotenv").config();
-const fs = require("fs");
-
-const key = fs.readFileSync("./key.pem", "utf8");
-const cert = fs.readFileSync("./cert.pem", "utf8");
 
 const app = express();
-const server = createServer(app);
-
-const { proxy, scriptUrl } = rtspRelay(app, server);
-
 app.use(cors());
 
-const dahuaPort = process.env.DAHUA_PORT || 80;
+const server = http.createServer(app);
+const wss = new WebSocket.Server({ server });
 
-const handler = (channel) =>
-  proxy({
-    url: `rtsp://admin:Henderson2016@cafe4you.dyndns.org:${dahuaPort}/cam/realmonitor?channel=${channel}&subtype=0`,
-    verbose: true, // Increase verbosity for more detailed logging
-    additionalFlags: ["-q", "1"],
-    transport: "tcp",
-    onDisconnect: (client) => {
-      console.log(`Client disconnected: ${client}`);
-      // Optionally, handle reconnection logic here
-    },
-    onError: (error) => {
-      console.error(`Stream error: ${error}`);
-      // Optionally, handle stream errors here
-      }
+const dahuaPort = process.env.DAHUA_PORT || 554;
+
+const createFFmpegProcess = (channel) => {
+  console.log(`Creating FFmpeg process for channel ${channel}`);
+  return spawn("ffmpeg", [
+    "-rtsp_transport",
+    "tcp",
+    "-i",
+    `rtsp://admin:Henderson2016@cafe4you.dyndns.org:${dahuaPort}/cam/realmonitor?channel=${channel}&subtype=0`,
+    "-f",
+    "mpegts",
+    "-codec:v",
+    "mpeg1video",
+    "-codec:a",
+    "mp2",
+    "-",
+  ]);
+};
+
+wss.on("connection", (ws, req) => {
+  const url = new URL(req.url, `http://${req.headers.host}`);
+  const channel = url.pathname.split("/").pop();
+  
+  const ffmpeg = createFFmpegProcess(channel);
+
+  ffmpeg.stdout.on("data", (data) => {
+    console.log(`Sending data for channel ${channel}`);
+    ws.send(data);
   });
 
-  app.ws("/api/stream/:channel", (ws, req) => {
-    const { channel } = req.params;
-    const wsHandler = handler(channel);
-    wsHandler(ws, req);
-    });
-    
-    app.get("/:id", (req, res) => {
-      const id = req.params.id;
-      // const wsProtocol = process.env.NODE_ENV === "production" ? "wss" : "ws";
-      const wsProtocol = "ws";
-      console.log(`${wsProtocol}://' + location.host + '/api/stream/${id}`)
-      res.send(`
-        <div>
-        <canvas id="canvas" style="width: 100vw; height: 100vh; display: block;"></canvas>
-        <div id="player-controls">
-        <button id="play-button">Play</button>
-        <button id="pause-button">Pause</button>
-        <button id="mute-button">Mute</button>
-        <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="1">
-      </div>
+  ffmpeg.stderr.on("data", (data) => {
+    console.error(`FFmpeg error for channel ${channel}: ${data}`);
+  });
+
+  ffmpeg.on("close", (code) => {
+    console.log(`FFmpeg process exited with code ${code} for channel ${channel}`);
+    ws.close();
+  });
+
+  ws.on("close", () => {
+    console.log(`WebSocket closed for channel ${channel}`);
+    ffmpeg.kill("SIGINT");
+  });
+});
+
+app.get("/:id", (req, res) => {
+  const id = req.params.id;
+  const wsProtocol = process.env.NODE_ENV === "production" ? "wss" : "ws";
+  res.send(`
+    <div>
+      <canvas id="canvas" style="width: 100vw; height: 100vh; display: block;"></canvas>
     </div>
-    <style>
-      body {
-        padding: 0;
-        margin: 0;
-      }
-      #player-controls {
-        display: none;
-        justify-content: space-between;
-        align-items: center;
-        background-color: #333;
-        padding: 10px;
-      }
-      button {
-        margin: 0 5px;
-        padding: 8px 12px;
-        border: none;
-        border-radius: 4px;
-        background-color: #3498db;
-        color: white;
-        cursor: pointer;
-      }
-      input[type="range"] {
-        width: 100px;
-        margin: 0 5px;
-      }
-    </style>
-    <script src='${scriptUrl}'></script>
     <script>
-      var playerPromise = loadPlayer({
-        url: '${wsProtocol}://' + location.host + '/api/stream/${id}',
-        canvas: document.getElementById('canvas'),
-        audio: true
-      });
+      const ws = new WebSocket('${wsProtocol}://' + location.host + '/api/stream/${id}');
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      img.onload = () => ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-      const playButton = document.getElementById('play-button');
-      const pauseButton = document.getElementById('pause-button');
-      const muteButton = document.getElementById('mute-button');
-      const volumeSlider = document.getElementById('volume-slider');
+      ws.onmessage = (event) => {
+        img.src = URL.createObjectURL(event.data);
+      };
 
-      playerPromise.then(player => {
-        playButton.addEventListener('click', () => {
-          player.play();
-        });
+      ws.onopen = () => {
+        console.log("WebSocket connection opened for channel ${id}");
+      };
 
-        pauseButton.addEventListener('click', () => {
-          player.pause();
-        });
+      ws.onclose = () => {
+        console.log("WebSocket connection closed for channel ${id}");
+      };
 
-        muteButton.addEventListener('click', () => {
-          player.volume = player.volume === 0 ? 1 : 0;
-          volumeSlider.value = player.volume;
-        });
-
-        volumeSlider.addEventListener('input', () => {
-          player.volume = parseFloat(volumeSlider.value);
-        });
-      });
+      ws.onerror = (error) => {
+        console.error("WebSocket error for channel ${id}: ", error);
+      };
     </script>
   `);
 });
