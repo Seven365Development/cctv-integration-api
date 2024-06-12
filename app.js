@@ -38,9 +38,11 @@ const handler = (channel) => {
 // WebSocket connection handler
 wss.on("connection", (ws, req) => {
   const { id } = req.params;
+  console.log(`WebSocket connection established for channel ${id}`);
   const wsHandler = handler(id);
   proxy(wsHandler)(ws, req); // Proxy the RTSP stream to the WebSocket connection
 });
+
 
 // HTTP route handler for serving the HTML page with the video player
 app.get("/:id", (req, res) => {
