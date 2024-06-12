@@ -30,23 +30,24 @@ const handler = (channel) =>
     onError: (error) => {
       console.error(`Stream error: ${error}`);
       // Optionally, handle stream errors here
-    }
+      }
   });
 
-app.ws("/api/stream/:channel", (ws, req) => {
-  const { channel } = req.params;
-  const wsHandler = handler(channel);
-  wsHandler(ws, req);
-});
-
-app.get("/:id", (req, res) => {
-  const id = req.params.id;
-  // const wsProtocol = process.env.NODE_ENV === "production" ? "wss" : "ws";
-  const wsProtocol = "ws";
-  res.send(`
-    <div>
-      <canvas id="canvas" style="width: 100vw; height: 100vh; display: block;"></canvas>
-      <div id="player-controls">
+  app.ws("/api/stream/:channel", (ws, req) => {
+    const { channel } = req.params;
+    const wsHandler = handler(channel);
+    wsHandler(ws, req);
+    });
+    
+    app.get("/:id", (req, res) => {
+      const id = req.params.id;
+      // const wsProtocol = process.env.NODE_ENV === "production" ? "wss" : "ws";
+      const wsProtocol = "ws";
+      console.log(`${wsProtocol}://' + location.host + '/api/stream/${id}`)
+      res.send(`
+        <div>
+        <canvas id="canvas" style="width: 100vw; height: 100vh; display: block;"></canvas>
+        <div id="player-controls">
         <button id="play-button">Play</button>
         <button id="pause-button">Pause</button>
         <button id="mute-button">Mute</button>
