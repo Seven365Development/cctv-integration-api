@@ -9,7 +9,7 @@ const app = express();
 app.use(cors());
 
 const server = http.createServer(app);
-const wss = new WebSocket.Server({ server });
+const ws = new WebSocket.Server({ server });
 
 const dahuaPort = process.env.DAHUA_PORT || 554;
 
@@ -27,7 +27,7 @@ const createFFmpegProcess = (channel) => {
   ]);
 };
 
-wss.on("connection", (ws, req) => {
+ws.on("connection", (ws, req) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
   const channel = url.pathname.split("/").pop();
   
