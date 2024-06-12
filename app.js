@@ -18,16 +18,19 @@ app.use(cors());
 const dahuaPort = process.env.DAHUA_PORT || 80;
 
 const handler = (channel) =>
+  // rtsp://admin:Henderson2016@cafe4you.dyndns.org:554/cam/realmonitor?channel=1&subtype=0
   proxy({
     url: `rtsp://admin:Henderson2016@cafe4you.dyndns.org:${dahuaPort}/cam/realmonitor?channel=${channel}&subtype=0`,
     verbose: true, // Increase verbosity for more detailed logging
     additionalFlags: ["-q", "1"],
     transport: "tcp",
     onDisconnect: (client) => {
+      console.log('RSTP:' `rtsp://admin:Henderson2016@cafe4you.dyndns.org:${dahuaPort}/cam/realmonitor?channel=${channel}&subtype=0`)
       console.log(`Client disconnected: ${client}`);
       // Optionally, handle reconnection logic here
     },
     onError: (error) => {
+      console.log('RSTP:' `rtsp://admin:Henderson2016@cafe4you.dyndns.org:${dahuaPort}/cam/realmonitor?channel=${channel}&subtype=0`)
       console.error(`Stream error: ${error}`);
       // Optionally, handle stream errors here
     }
