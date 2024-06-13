@@ -17,20 +17,36 @@ app.use(cors());
 
 const dahuaPort = process.env.DAHUA_PORT || 80;
 
-const handler = (channel) =>
-  proxy({
-    url: `rtsp://admin:Henderson2016@cafe4you.dyndns.org:${dahuaPort}/cam/realmonitor?channel=${channel}&subtype=0`,
-    verbose: true,
-    additionalFlags: ["-q", "1"],
-    transport: "tcp",
-    onDisconnect: (client) => {
-      console.log(`Client disconnected: ${client}`);
-    },
-    onError: (error) => {
-      console.error(`Stream error: ${error}`);
-      console.log(`Stream URL: rtsp://admin:Henderson2016@cafe4you.dyndns.org:${dahuaPort}/cam/realmonitor?channel=${channel}&subtype=0`);
-    }
-  });
+const handler = (channel) => {
+  const connectToStream = () => {
+    proxy({
+      url: `rtsp://admin:Henderson2016@cafe4you.dyndns.org:${dahuaPort}/cam/realmonitor?channel=${channel}&subtype=0`,
+      verbose: true,
+      additionalFlags: ["-q", "1"],
+      transport: "tcp",
+      onDisconnect: (client) => {
+        console.log(`Client disconnected: ${client}`);
+        // Schedule a reconnect after some delay (e.g., 5 seconds)
+        setTimeout(connectToStream, 5000);
+      },
+      onError: (error) => {
+        console.error(`Stream error: ${error}`);
+        console.log(`Stream URL: rtsp://admin:Henderson2016@cafe4you.dyndns.org:${dahuaPort}/cam/realmonitor?channel=${channel}&subtype=0`);
+        // Log the error for troubleshooting
+        fs.appendFileSync('stream_errors.log', `${new Date().toISOString()} - Stream Error: ${error}\n`);
+        // Schedule a reconnect immediately
+        connectToStream();
+      }
+    });
+  };
+
+  connectToStream();
+
+  return (ws, req) => {
+    // Handle WebSocket connection here
+  };
+};
+
 
 app.ws("/api/stream/:channel", (ws, req) => {
   const { channel } = req.params;
