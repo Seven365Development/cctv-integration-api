@@ -20,7 +20,7 @@ const dahuaPort = process.env.DAHUA_PORT || 80;
 
 const handler = (channel) =>
   proxy({
-    url: `rtsp://admin:Henderson2016@cafe4you.dyndns.org:${dahuaPort}/cam/realmonitor?channel=${channel}&subtype=0`,
+    url: `rtsp://admin:Henderson2016@cafe4you.dyndns.org:554/cam/realmonitor?channel=1&subtype=0`,
     verbose: true,
     additionalFlags: ["-q", "1"],
     transport: "tcp",
