@@ -2,6 +2,7 @@ const rtspRelay = require("rtsp-relay");
 const express = require("express");
 const cors = require("cors");
 const { createServer } = require("http");
+const WebSocket = require("ws"); // Import WebSocket library
 require("dotenv").config();
 const fs = require("fs");
 
@@ -17,7 +18,10 @@ app.use(cors());
 
 const dahuaPort = process.env.DAHUA_PORT || 80;
 
+// Define handler function with WebSocket handling
 const handler = (channel) => {
+  let wsClients = [];
+
   const connectToStream = () => {
     proxy({
       url: `rtsp://admin:Henderson2016@cafe4you.dyndns.org:${dahuaPort}/cam/realmonitor?channel=${channel}&subtype=0`,
@@ -36,6 +40,14 @@ const handler = (channel) => {
         fs.appendFileSync('stream_errors.log', `${new Date().toISOString()} - Stream Error: ${error}\n`);
         // Schedule a reconnect immediately
         connectToStream();
+      },
+      onData: (data) => {
+        // Send data to all connected WebSocket clients
+        wsClients.forEach((client) => {
+          if (client.readyState === WebSocket.OPEN) {
+            client.send(data);
+          }
+        });
       }
     });
   };
@@ -43,19 +55,30 @@ const handler = (channel) => {
   connectToStream();
 
   return (ws, req) => {
-    console.log("🚀 ~ return ~ req:", req)
-    console.log("🚀 ~ return ~ ws:", ws)
-    // Handle WebSocket connection here
+    // Add WebSocket client to the array
+    wsClients.push(ws);
+
+    ws.on("close", () => {
+      // Remove WebSocket client from the array on close
+      wsClients = wsClients.filter((client) => client !== ws);
+    });
+
+    // Optionally, handle WebSocket messages from clients
+    ws.on("message", (message) => {
+      console.log(`Received message from client: ${message}`);
+      // Handle incoming WebSocket messages if needed
+    });
   };
 };
 
-
+// WebSocket endpoint
 app.ws("/api/stream/:channel", (ws, req) => {
   const { channel } = req.params;
   const wsHandler = handler(channel);
   wsHandler(ws, req);
 });
 
+// HTTP endpoint to serve the HTML player
 app.get("/:id", (req, res) => {
   const id = req.params.id;
   const wsProtocol = process.env.NODE_ENV === "production" ? "wss" : "ws";
