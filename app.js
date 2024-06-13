@@ -43,6 +43,8 @@ const handler = (channel) => {
   connectToStream();
 
   return (ws, req) => {
+    console.log("🚀 ~ return ~ req:", req)
+    console.log("🚀 ~ return ~ ws:", ws)
     // Handle WebSocket connection here
   };
 };
