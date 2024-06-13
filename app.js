@@ -1,7 +1,7 @@
+const rtspRelay = require("rtsp-relay");
 const express = require("express");
 const cors = require("cors");
 const { createServer } = require("http");
-const { WebSocketServer } = require("ws"); // Import WebSocketServer from 'ws' package
 require("dotenv").config();
 const fs = require("fs");
 
@@ -9,45 +9,43 @@ const key = fs.readFileSync("./key.pem", "utf8");
 const cert = fs.readFileSync("./cert.pem", "utf8");
 
 const app = express();
-app.use(cors());
-
 const server = createServer(app);
 
-const wss = new WebSocketServer({ server }); // Create a WebSocket server
+const { proxy, scriptUrl } = rtspRelay(app, server);
+
+app.use(cors());
 
 const dahuaPort = process.env.DAHUA_PORT || 80;
 
-// Function to handle RTSP stream proxying
-const handler = (channel) => {
-  return {
+const handler = (channel) =>
+  // rtsp://admin:Henderson2016@cafe4you.dyndns.org:554/cam/realmonitor?channel=1&subtype=0
+  proxy({
     url: `rtsp://admin:Henderson2016@cafe4you.dyndns.org:${dahuaPort}/cam/realmonitor?channel=${channel}&subtype=0`,
     verbose: true, // Increase verbosity for more detailed logging
     additionalFlags: ["-q", "1"],
     transport: "tcp",
     onDisconnect: (client) => {
+      console.log('RSTP:' `rtsp://admin:Henderson2016@cafe4you.dyndns.org:${dahuaPort}/cam/realmonitor?channel=${channel}&subtype=0`)
       console.log(`Client disconnected: ${client}`);
       // Optionally, handle reconnection logic here
     },
     onError: (error) => {
+      console.log('RSTP:' `rtsp://admin:Henderson2016@cafe4you.dyndns.org:554/cam/realmonitor?channel=1&subtype=0`)
       console.error(`Stream error: ${error}`);
       // Optionally, handle stream errors here
     }
-  };
-};
+  });
 
-// WebSocket connection handler
-wss.on("connection", (ws, req) => {
-  const { id } = req.params;
-  console.log(`WebSocket connection established for channel ${id}`);
-  const wsHandler = handler(id);
-  proxy(wsHandler)(ws, req); // Proxy the RTSP stream to the WebSocket connection
+app.ws("/api/stream/:channel", (ws, req) => {
+  const { channel } = req.params;
+  const wsHandler = handler(channel);
+  wsHandler(ws, req);
 });
 
-
-// HTTP route handler for serving the HTML page with the video player
 app.get("/:id", (req, res) => {
   const id = req.params.id;
-  const wsProtocol = process.env.NODE_ENV === "production" ? "wss" : "ws";
+  // const wsProtocol = process.env.NODE_ENV === "production" ? "wss" : "ws";
+  const wsProtocol = "ws";
   res.send(`
     <div>
       <canvas id="canvas" style="width: 100vw; height: 100vh; display: block;"></canvas>
@@ -84,6 +82,7 @@ app.get("/:id", (req, res) => {
         margin: 0 5px;
       }
     </style>
+    <script src='${scriptUrl}'></script>
     <script>
       var playerPromise = loadPlayer({
         url: '${wsProtocol}://' + location.host + '/api/stream/${id}',
@@ -118,7 +117,7 @@ app.get("/:id", (req, res) => {
   `);
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = Number(process.env.PORT) || 3000;
 const HOST = process.env.HOST || "0.0.0.0";
 
 server.listen(PORT, () => {
