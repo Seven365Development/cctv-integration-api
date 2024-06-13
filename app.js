@@ -2,6 +2,7 @@ const rtspRelay = require("rtsp-relay");
 const express = require("express");
 const cors = require("cors");
 const { createServer } = require("http");
+const { WebSocketServer } = require("ws");
 require("dotenv").config();
 const fs = require("fs");
 
