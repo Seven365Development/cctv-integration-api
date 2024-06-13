@@ -1,7 +1,7 @@
 const rtspRelay = require("rtsp-relay");
 const express = require("express");
 const cors = require("cors");
-const { createServer } = require("http");
+const { createServer } = require("https"); // Change to 'https' for SSL
 const { WebSocketServer } = require("ws");
 require("dotenv").config();
 const fs = require("fs");
@@ -16,11 +16,11 @@ const { proxy, scriptUrl } = rtspRelay(app, server);
 
 app.use(cors());
 
-const dahuaPort = process.env.DAHUA_PORT || 80;
+const dahuaPort = process.env.DAHUA_PORT || 554; // Default to 554 for RTSP
 
 const handler = (channel) =>
   proxy({
-    url: `rtsp://admin:Henderson2016@cafe4you.dyndns.org:554/cam/realmonitor?channel=1&subtype=0`,
+    url: `rtsp://admin:Henderson2016@cafe4you.dyndns.org:${dahuaPort}/cam/realmonitor?channel=${channel}&subtype=0`,
     verbose: true,
     additionalFlags: ["-q", "1"],
     transport: "tcp",
@@ -119,5 +119,11 @@ const PORT = Number(process.env.PORT) || 3000;
 const HOST = process.env.HOST || "0.0.0.0";
 
 server.listen(PORT, () => {
-  console.log(`Server is running on http://${HOST}:${PORT}`);
+  console.log(`Server is running on https://${HOST}:${PORT}`);
+});
+
+// Error handling for unhandled promise rejections
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("Unhandled Rejection at:", promise, "reason:", reason);
+  // Application specific logging, throwing an error, or other logic here
 });
