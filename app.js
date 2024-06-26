@@ -6,11 +6,11 @@ require("dotenv").config();
 const fs = require("fs");
 
 const key = fs.readFileSync(
-  "./etc/letsencrypt/live/cctv-integration-api.seven365.com.sg/privkey.pem",
+  "/etc/letsencrypt/live/cctv-integration-api.seven365.com.sg/privkey.pem",
   "utf8"
 );
 const cert = fs.readFileSync(
-  "./etc/letsencrypt/live/cctv-integration-api.seven365.com.sg/fullchain.pem",
+  "/etc/letsencrypt/live/cctv-integration-api.seven365.com.sg/fullchain.pem",
   "utf8"
 );
 
