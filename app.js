@@ -75,7 +75,7 @@ WebSocketServer.on("connection", function connection(ws) {
 });
 
 const PORT = Number(process.env.PORT) || 3000;
-const HOST = process.env.HOST || "0.0.0.0";
+const HOST = process.env.HOST || "localhost";
 
 server.listen(PORT, () => {
   console.log(`Server is running on http://${HOST}:${PORT}`);
