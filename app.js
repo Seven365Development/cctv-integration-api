@@ -77,12 +77,6 @@ app.get("/:id", (req, res) => {
   res.send(`
     <div>
       <canvas id="canvas" style="width: 100vw; height: 100vh; display: block;"></canvas>
-      <div id="player-controls">
-        <button id="play-button">Play</button>
-        <button id="pause-button">Pause</button>
-        <button id="mute-button">Mute</button>
-        <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="1">
-      </div>
     </div>
     <style>
       body {
