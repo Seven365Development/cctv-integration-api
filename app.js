@@ -2,17 +2,20 @@ const rtspRelay = require("rtsp-relay");
 const express = require("express");
 const cors = require("cors");
 const { createServer } = require("http");
+const { spawn } = require("child_process");
 require("dotenv").config();
 const fs = require("fs");
 
-const key = fs.readFileSync(
-  "/etc/letsencrypt/live/cctv-integration-api.seven365.com.sg/privkey.pem",
-  "utf8"
-);
-const cert = fs.readFileSync(
-  "/etc/letsencrypt/live/cctv-integration-api.seven365.com.sg/fullchain.pem",
-  "utf8"
-);
+const key = fs.readFileSync("./key.pem", "utf8");
+const cert = fs.readFileSync("./cert.pem", "utf8");
+// const key = fs.readFileSync(
+//   "/etc/letsencrypt/live/cctv-integration-api.seven365.com.sg/privkey.pem",
+//   "utf8"
+// );
+// const cert = fs.readFileSync(
+//   "/etc/letsencrypt/live/cctv-integration-api.seven365.com.sg/fullchain.pem",
+//   "utf8"
+// );
 
 const app = express();
 const server = createServer({ key, cert }, app);
@@ -23,22 +26,44 @@ app.use(cors());
 
 const dahuaPort = process.env.DAHUA_PORT || 80;
 
-const handler = (channel) =>
-  proxy({
-    url: `rtsp://admin:Henderson2016@cafe4you.dyndns.org:${dahuaPort}/cam/realmonitor?channel=${channel}&subtype=0`,
-    verbose: true,
-    additionalFlags: ["-q", "1"],
-    transport: "tcp",
-    onDisconnect: (client) => {
-      console.log(`Client disconnected: ${client}`);
-    },
-    onError: (error) => {
-      console.error(`Stream error: ${error}`);
-      console.log(
-        `Stream URL: rtsp://admin:Henderson2016@cafe4you.dyndns.org:${dahuaPort}/cam/realmonitor?channel=${channel}&subtype=0`
-      );
-    },
-  });
+const handler = (channel) => {
+  return (ws, req) => {
+    const ffmpeg = spawn("ffmpeg", [
+      "-i",
+      `rtsp://admin:Henderson2016@cafe4you.dyndns.org:${dahuaPort}/cam/realmonitor?channel=${channel}&subtype=0`,
+      "-f",
+      "mpegts",
+      "-codec:v",
+      "mpeg1video",
+      "-codec:a",
+      "mp2",
+      "-b:v",
+      "800k",
+      "-r",
+      "30",
+      "-",
+    ]);
+
+    ffmpeg.stdout.on("data", (data) => {
+      if (ws.readyState === ws.OPEN) {
+        ws.send(data);
+      }
+    });
+
+    ffmpeg.stderr.on("data", (data) => {
+      console.error(`FFmpeg stderr: ${data}`);
+    });
+
+    ffmpeg.on("close", (code) => {
+      console.log(`FFmpeg exited with code ${code}`);
+      ws.close();
+    });
+
+    ws.on("close", () => {
+      ffmpeg.kill("SIGINT");
+    });
+  };
+};
 
 app.ws("/api/stream/:channel", (ws, req) => {
   const { channel } = req.params;
@@ -127,6 +152,6 @@ const HOST = process.env.HOST || "0.0.0.0";
 
 server.listen(PORT, () => {
   console.log(
-    `Server is running on http://${HOST}:${PORT} and DAHUA PORT is running on ${dahuaPort}`
+    `Server is running on https://${HOST}:${PORT} and DAHUA PORT is running on ${dahuaPort}`
   );
 });
