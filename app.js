@@ -51,11 +51,11 @@ const handler = (channel) => {
     });
 
     ffmpeg.stderr.on("data", (data) => {
-      console.error(`FFmpeg stderr: ${data}`);
+      // console.error(`FFmpeg stderr: ${data}`);
     });
 
     ffmpeg.on("close", (code) => {
-      console.log(`FFmpeg exited with code ${code}`);
+      // console.log(`FFmpeg exited with code ${code}`);
       ws.close();
     });
 
