@@ -127,6 +127,6 @@ const HOST = process.env.HOST || "0.0.0.0";
 
 server.listen(PORT, () => {
   console.log(
-    `Server is running on http://${HOST}:${PORT} and DAHUA PORT is running on ${DAHUA_PORT}`
+    `Server is running on http://${HOST}:${PORT} and DAHUA PORT is running on ${dahuaPort}`
   );
 });
