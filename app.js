@@ -74,7 +74,7 @@ WebSocketServer.on("connection", function connection(ws) {
   });
 });
 
-const PORT = Number(process.env.PORT) || 3000;
+const PORT = Number(process.env.PORT) || 4030;
 const HOST = process.env.HOST || "localhost";
 
 server.listen(PORT, () => {
