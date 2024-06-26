@@ -2,7 +2,6 @@ const rtspRelay = require("rtsp-relay");
 const express = require("express");
 const cors = require("cors");
 const { createServer } = require("http");
-const WebSocket = require("ws"); // Import WebSocket library
 require("dotenv").config();
 const fs = require("fs");
 
@@ -18,72 +17,29 @@ app.use(cors());
 
 const dahuaPort = process.env.DAHUA_PORT || 80;
 
-// Define handler function with WebSocket handling
-const handler = (channel) => {
-  let wsClients = [];
+const handler = (channel) =>
+  proxy({
+    url: `rtsp://admin:Henderson2016@cafe4you.dyndns.org:${dahuaPort}/cam/realmonitor?channel=${channel}&subtype=0`,
+    verbose: true,
+    additionalFlags: ["-q", "1"],
+    transport: "tcp",
+    onDisconnect: (client) => {
+      console.log(`Client disconnected: ${client}`);
+    },
+    onError: (error) => {
+      console.error(`Stream error: ${error}`);
+      console.log(
+        `Stream URL: rtsp://admin:Henderson2016@cafe4you.dyndns.org:${dahuaPort}/cam/realmonitor?channel=${channel}&subtype=0`
+      );
+    },
+  });
 
-  const connectToStream = () => {
-    proxy({
-      url: `rtsp://admin:Henderson2016@cafe4you.dyndns.org:${dahuaPort}/cam/realmonitor?channel=${channel}&subtype=0`,
-      verbose: true,
-      additionalFlags: ["-q", "1"],
-      transport: "tcp",
-      onDisconnect: (client) => {
-        console.log(`Client disconnected: ${client}`);
-        // Schedule a reconnect after some delay (e.g., 5 seconds)
-        setTimeout(connectToStream, 5000);
-      },
-      onError: (error) => {
-        console.error(`Stream error: ${error}`);
-        console.log(
-          `Stream URL: rtsp://admin:Henderson2016@cafe4you.dyndns.org:${dahuaPort}/cam/realmonitor?channel=${channel}&subtype=0`
-        );
-        // Log the error for troubleshooting
-        fs.appendFileSync(
-          "stream_errors.log",
-          `${new Date().toISOString()} - Stream Error: ${error}\n`
-        );
-        // Schedule a reconnect immediately
-        connectToStream();
-      },
-      onData: (data) => {
-        // Send data to all connected WebSocket clients
-        wsClients.forEach((client) => {
-          if (client.readyState === WebSocket.OPEN) {
-            client.send(data);
-          }
-        });
-      },
-    });
-  };
-
-  connectToStream();
-
-  return (ws, req) => {
-    // Add WebSocket client to the array
-    wsClients.push(ws);
-
-    ws.on("close", () => {
-      // Remove WebSocket client from the array on close
-      wsClients = wsClients.filter((client) => client !== ws);
-    });
-
-    // Optionally, handle WebSocket messages from clients
-    ws.on("message", (message) => {
-      console.log(`Received message from client: ${message}`);
-      // Handle incoming WebSocket messages if needed
-    });
-  };
-};
-
-// WebSocket endpoint
 app.ws("/api/stream/:channel", (ws, req) => {
   const { channel } = req.params;
   const wsHandler = handler(channel);
   wsHandler(ws, req);
 });
 
-// HTTP endpoint to serve the HTML player
 app.get("/:id", (req, res) => {
   const id = req.params.id;
   const wsProtocol = process.env.NODE_ENV === "production" ? "wss" : "ws";
